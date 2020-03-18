@@ -238,15 +238,35 @@ class Environment():
 			self.collidedWithItself = True
 			self.resetPositions(self.snakeInitialLength)
 			newState = self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
+
+		elif movement == 'food':
+			self.ate = True
+			self.resetFoodPosition()
+			self.snake.grow(self.getDirectionOfMovementOfSnake())
+			newState = self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 		return newState
 
 	def canAgentMove(self,position):
-		if position.getX() < self.gridWidth and position.getX() >= 0 and position.getY() < self.gridHeight and position.getY() >= 0:
+		ok = self.movementInsideBoundaries(position)
+		selfCollision = self.selfCollided(position)
+
+		if ok and not selfCollision and not self.foodWasEaten(position):
 			return 'OK'
-		elif self.checkCollisionWithItself(position) == True:
+
+		elif ok and selfCollision:
 			return 'itself'
-		else:
+
+		elif ok and self.foodWasEaten(position):
+			return 'food'
+
+		elif not ok:
 			return 'wall'
+
+	def movementInsideBoundaries(self,position):
+		if position.getX() < self.gridWidth and position.getX() >= 0 and position.getY() < self.gridHeight and position.getY() >= 0:
+			return True
+		else:
+			return False
 
 	def updateEnvironment(self):
 		xSnake = self.snake.getX()
@@ -279,33 +299,23 @@ class Environment():
 
 		self.snake.setState(stateSnake)
 
-		return stateSnake
-
-		
+		return stateSnake	
 
 	def computeReward(self):
-		if self.foodWasEaten():
-			self.snake.grow(self.getDirectionOfMovementOfSnake())
-			self.resetFoodPosition()
-			self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
-			self.ate = True
+		if self.ate:
 			return 100
-		
-		elif self.collisionWithWall():
-			return -50
-
-		elif self.collisionWithItself():
+		elif self.collidedWithWall:
+			return -80
+		elif self.collidedWithItself:
 			return -70
-
 		else:
 			return -self.distanceToFood()
-
 
 	def distanceToFood(self):
 		return geometry.distanceBetweenTwoPoints(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 	
-	def foodWasEaten(self):
-		if self.snake.getX() == self.food.getX() and self.snake.getY() == self.food.getY():
+	def foodWasEaten(self,position):
+		if position.getX() == self.food.getX() and position.getY() == self.food.getY():
 			return True
 		else:
 			return False
@@ -313,7 +323,7 @@ class Environment():
 	def collisionWithWall(self):
 		return self.collidedWithWall
 
-	def checkCollisionWithItself(self,position):
+	def selfCollided(self,position):
 		HEAD_INDEX = 0
 		for index,bodyPart in enumerate(self.snake.getBody()):
 			if HEAD_INDEX == 0:

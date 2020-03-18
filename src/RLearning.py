@@ -79,7 +79,7 @@ class RLearning():
 
 	def updateCountersAndDecayingParameters(self):		
 		if self.environment.collisionWithWall() or self.environment.collisionWithItself() or self.numberOfstepsTaken == MAX_STEPS_PER_EPISODE:
-		#statistics
+			#statistics
 			self.auxiliarCounterCollisionsEpisodes+=1
 			if self.environment.collisionWithWall():
 				self.counterCollisionsWithWall+=1
@@ -110,9 +110,6 @@ class RLearning():
 			self.actualEpsilon = ((self.episodesLeft-EPISODES)/EPISODES)*EPSILON+EPSILON
 			self.actualGamma = 0.5*((self.episodesLeft-EPISODES)/EPISODES)*GAMMA+GAMMA
 
-			#print('epsilon:',self.actualEpsilon)
-			#print('gamma:',self.actualGamma)
-
 
 		else:
 			#print('STEPS:\n',self.numberOfstepsTaken)
@@ -122,7 +119,6 @@ class RLearning():
 
 	def decideAction(self):
 		randomNumber = random.uniform(0,1)
-		#print('MY BODY:',print(self.environment.getSnakeData()))
 		if(randomNumber > self.actualEpsilon):
 			state = self.agent.getState()
 			print('INTELLIGENT')
@@ -141,9 +137,8 @@ class RLearning():
 	def generateRandomNumber(self,start,end):
 		return random.randint(start,end)
 
-	def isFinalState(self,state):
-		POLAR_STATE_INDEX = 0
-		return (state[POLAR_STATE_INDEX].getRo() == 0 and state[POLAR_STATE_INDEX].getTheta() == 0) or self.environment.collisionWithItself() or self.environment.collisionWithWall()
+	def isFinalState(self):
+		return self.environment.collisionWithItself() or self.environment.collisionWithWall()
 		
 
 	def act(self):
@@ -160,7 +155,7 @@ class RLearning():
 
 		#print('newState',newState[0].getRo(),newState[0].getTheta(),newState[1],'reward',reward)
 
-		if self.isFinalState(newState):
+		if self.isFinalState():
 			newQ = oldQ  + self.actualAlpha*(reward - oldQ)
 		else:
 			maxQ,_ = self.QTable.findBestQandAction(newState)
@@ -168,7 +163,7 @@ class RLearning():
 
 		#update QTable		
 		self.QTable.setNewQ(oldState,action,newQ)
-
+		print('newQ:',newQ,'reward:',reward)
 		#statistics
 		self.lastReward = reward
 
