@@ -25,7 +25,7 @@ class RLearning():
 		# create snake and food objects
 		self.agent = ent.Snake(SNAKE_INITIAL_LENGTH)
 		self.food = ent.Food()
-		#print('PUTA:',self.agent)
+		#print(self.agent)
 
 		# set the environment
 		self.environment = env.Environment(gridWidth,gridHeight,SNAKE_INITIAL_LENGTH,self.agent,self.food,STRENGTH_LINE_OF_SIGHT,RANGE_LINE_OF_SIGHT)
@@ -72,6 +72,9 @@ class RLearning():
 			self.actualEpsilon = ((self.episodesLeft-EPISODES)/EPISODES)*EPSILON+EPSILON
 			self.actualGamma = 0.5*((self.episodesLeft-EPISODES)/EPISODES)*GAMMA+GAMMA
 
+			print('epsilon:',self.actualEpsilon)
+			print('gamma:',self.actualGamma)
+
 
 		else:
 			#print('STEPS:\n',self.numberOfstepsTaken)
@@ -112,12 +115,12 @@ class RLearning():
 		#decide Action
 		action,oldState,oldQ = self.decideAction()
 
-		#print('oldState',oldState[0].getRo(),oldState[0].getTheta(),oldState[1],'action:',actions.toString(action))
+		print('oldState',oldState[0].getRo(),oldState[0].getTheta(),oldState[1],'action:',actions.toString(action))
 
 		#do Action
 		newState,reward = self.environment.stepInTheEnvironment(action)
 
-		#print('newState',newState[0].getRo(),newState[0].getTheta(),newState[1],'reward',reward)
+		print('newState',newState[0].getRo(),newState[0].getTheta(),newState[1],'reward',reward)
 
 		if self.isFinalState(newState):
 			newQ = oldQ  + self.actualAlpha*(reward - oldQ)
