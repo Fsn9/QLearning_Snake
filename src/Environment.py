@@ -275,6 +275,7 @@ class Environment():
 		snakeCartesianState,direction_,self.matrix,self.rangeLineOfSight)
 
 		stateSnake = (polarStateSnakeRelatedToFood,lineOfSightState)
+		#print(lineOfSightState)
 
 		self.snake.setState(stateSnake)
 
@@ -286,9 +287,10 @@ class Environment():
 		if self.foodWasEaten():
 			self.snake.grow(self.getDirectionOfMovementOfSnake())
 			self.resetFoodPosition()
+			self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 			self.ate = True
 			return 100
-		#adicionar colisão contra ele propria
+		
 		elif self.collisionWithWall():
 			return -50
 

@@ -65,7 +65,6 @@ def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environme
 
 	_,wallsModel = getWallsModel(envSizeWidth,envSizeHeight,thickness)
 	completeEnvironment = putWalls(environmentMatrixWithoutWalls,wallsModel,thickness)
-	
 	if strength == 'low':
 		if direction == 'up':
 			for range_ in range(1,range_+1):
@@ -110,6 +109,7 @@ def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environme
 
 	elif strength == 'high':
 		return None
+	#print('\nMODEL:',model)
 	return model
 
 def generateAllStatesLineOfSight(rangeLineOfSight,strengthLineOfSight,entities):

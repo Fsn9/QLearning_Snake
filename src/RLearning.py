@@ -8,7 +8,7 @@ SNAKE_INITIAL_LENGTH = 2
 EPSILON = 0.95
 GAMMA = 0.95
 ALPHA = 0.1
-MAX_STEPS_PER_EPISODE = 36
+MAX_STEPS_PER_EPISODE = 30
 EPISODES = 4000
 
 #range and strength of the line of sight
@@ -41,9 +41,29 @@ class RLearning():
 		self.QTable = qt.QTable(gridWidth, gridHeight)
 		self.QTable.initTable(gridWidth,gridHeight,RANGE_LINE_OF_SIGHT,STRENGTH_LINE_OF_SIGHT,self.environment.getEntities())
 
+		# statistics
+		#steps
+		self.arrayAverageSteps = [MAX_STEPS_PER_EPISODE]*10
+		self.arrayAverageReward = [0]*30
+		#reward
+		self.averageReward = 0
+		self.averageSteps = 0
+		#collisions
+		self.counterCollisionsWithItself = 0
+		self.counterCollisionsWithWall = 0
+		self.movingAverageArrayWallCollisions = [0]*20
+		self.movingAverageWallCollisions = 0
+		self.auxiliarCounterCollisions = 0
+		self.wallCollisionsSamplingFrequency = 10
+		self.auxiliarCounterCollisionsEpisodes = 0
+
+
 
 	def __str__(self):
 		pass
+
+	def getStatisticalData(self):
+		return self.averageReward,self.averageSteps,self.actualEpsilon,self.actualGamma,self.episodesLeft,self.counterCollisionsWithWall,self.counterCollisionsWithItself,self.movingAverageWallCollisions
 
 	def getAgent(self):
 		return self.agent
@@ -59,28 +79,46 @@ class RLearning():
 
 	def updateCountersAndDecayingParameters(self):		
 		if self.environment.collisionWithWall() or self.environment.collisionWithItself() or self.numberOfstepsTaken == MAX_STEPS_PER_EPISODE:
-			#statistics
-			#print('itself:',self.environment.collisionWithItself())
-			#print('wall:',self.environment.collisionWithWall())
-			#self.arrayAverage.pop()
-			#self.arrayAverage.insert(0,self.numberOfstepsTaken)
-			#self.average = sum(self.arrayAverage) / len(self.arrayAverage)
+		#statistics
+			self.auxiliarCounterCollisionsEpisodes+=1
+			if self.environment.collisionWithWall():
+				self.counterCollisionsWithWall+=1
+				self.auxiliarCounterCollisions+=1
+				if self.auxiliarCounterCollisionsEpisodes == self.wallCollisionsSamplingFrequency:
+					self.movingAverageArrayWallCollisions.pop()
+					self.movingAverageArrayWallCollisions.insert(0,self.auxiliarCounterCollisions)
+					self.movingAverageWallCollisions = sum(self.movingAverageArrayWallCollisions) / len(self.movingAverageArrayWallCollisions)
+					self.auxiliarCounterCollisions = 0
+					self.auxiliarCounterCollisionsEpisodes = 0
+
+
+			if self.environment.collisionWithItself():
+				self.counterCollisionsWithItself+=1
+
+			self.arrayAverageSteps.pop()
+			self.arrayAverageSteps.insert(0,self.numberOfstepsTaken)
+			self.averageSteps = sum(self.arrayAverageSteps) / len(self.arrayAverageSteps)
+
+			self.arrayAverageReward.pop()
+			self.arrayAverageReward.insert(0,self.lastReward)
+			self.averageReward = sum(self.arrayAverageReward) / len(self.arrayAverageReward)
+
 			self.numberOfstepsTaken = 0
 			self.episodesLeft -= 1
 			self.environment.resetPositions(SNAKE_INITIAL_LENGTH)
-			print('episodesLeft:',self.episodesLeft)
+			#print('episodesLeft:',self.episodesLeft)
 			self.actualEpsilon = ((self.episodesLeft-EPISODES)/EPISODES)*EPSILON+EPSILON
 			self.actualGamma = 0.5*((self.episodesLeft-EPISODES)/EPISODES)*GAMMA+GAMMA
 
-			print('epsilon:',self.actualEpsilon)
-			print('gamma:',self.actualGamma)
+			#print('epsilon:',self.actualEpsilon)
+			#print('gamma:',self.actualGamma)
 
 
 		else:
 			#print('STEPS:\n',self.numberOfstepsTaken)
 			self.numberOfstepsTaken += 1
 			if self.environment.foodEaten():
-				self.numberOfstepsTaken-=10
+				self.numberOfstepsTaken-=20
 
 	def decideAction(self):
 		randomNumber = random.uniform(0,1)
@@ -115,12 +153,12 @@ class RLearning():
 		#decide Action
 		action,oldState,oldQ = self.decideAction()
 
-		print('oldState',oldState[0].getRo(),oldState[0].getTheta(),oldState[1],'action:',actions.toString(action))
+		#print('oldState',oldState[0].getRo(),oldState[0].getTheta(),oldState[1],'action:',actions.toString(action))
 
 		#do Action
 		newState,reward = self.environment.stepInTheEnvironment(action)
 
-		print('newState',newState[0].getRo(),newState[0].getTheta(),newState[1],'reward',reward)
+		#print('newState',newState[0].getRo(),newState[0].getTheta(),newState[1],'reward',reward)
 
 		if self.isFinalState(newState):
 			newQ = oldQ  + self.actualAlpha*(reward - oldQ)
@@ -130,6 +168,9 @@ class RLearning():
 
 		#update QTable		
 		self.QTable.setNewQ(oldState,action,newQ)
+
+		#statistics
+		self.lastReward = reward
 
 
 

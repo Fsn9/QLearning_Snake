@@ -24,14 +24,38 @@ class GUI(tk.Tk):
 
         # draw canvas
         self.canvas = self.setCanvas(self.width, self.height, "black")
-        self.canvas.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
+        self.canvas.grid(row=0, column=0, columnspan=2, sticky=tk.W + tk.E + tk.N + tk.S)
 
+        #draw labels
+        self.labelReward = self.createLabel('Average reward:',1,0)
+        self.labelRewardval = self.createLabel(str(self.rl.averageReward),1,1)
+        self.labelSteps = self.createLabel('Average steps:',2,0)
+        self.labelStepsval = self.createLabel(str(self.rl.averageSteps),2,1)
+        self.labelEpsilon = self.createLabel('Epsilon:',3,0)
+        self.labelEpsilonval = self.createLabel(str(self.rl.actualEpsilon),3,1)
+        self.labelGamma = self.createLabel('Gamma:',4,0)
+        self.labelGammaval = self.createLabel(str(self.rl.actualGamma),4,1)
+        self.labelEpisodesLeft = self.createLabel('EpisodesLeft:',5,0)
+        self.labelEpisodesLeftval = self.createLabel(str(self.rl.actualGamma),5,1)
+        self.labelCollisionsWall = self.createLabel('Wall collisions:',6,0)
+        self.labelCollisionsWallval = self.createLabel(str(self.rl.counterCollisionsWithWall),6,1)
+        self.labelCollisionsItself = self.createLabel('Self collisions:',7,0)
+        self.labelCollisionsItselfval = self.createLabel(str(self.rl.counterCollisionsWithItself),7,1)
+        self.labelMovingAverageCollisionsWall = self.createLabel('Moving average wall collisions',8,0)
+        self.labelMovingAverageCollisionsWallval = self.createLabel(str(self.rl.movingAverageWallCollisions),8,1)
         self.drawWalls()
         self.startLearning()
+
+
 
     def __str__(self):
         return '--GUI--' + '\n' + 'width = ' + str(self.width) + ' pixels' + '\nheight = ' + str(
             self.height) + ' pixels' + '\npixelSize = ' + str(int(self.pixelSize)) + ' pixels'
+
+    def createLabel(self,text,row,col):
+        label = tk.Label(text = text)
+        label.grid(row=row,column=col)
+        return label   
 
     def setCanvas(self, width, height, color):
         canvas = tk.Canvas(width = width, height = height, bg = color)
@@ -62,6 +86,16 @@ class GUI(tk.Tk):
                 self.snakeGUI.append(self.drawRectangle(eachBodyPart.getX()+1, eachBodyPart.getY()+1, 'orange'))
         food = self.rl.getEnvironment().getFoodData()
         self.foodGUI = self.drawRectangle(food.getX()+1, food.getY()+1, 'red')
+
+        reward,steps,epsilon,gamma,episodes,wallCollisions,selfCollisions,movingAverageWallCollisions = self.rl.getStatisticalData()
+        self.labelStepsval.config(text=str(steps))
+        self.labelGammaval.config(text=str(gamma))
+        self.labelEpsilonval.config(text=str(epsilon))
+        self.labelRewardval.config(text=str(reward))
+        self.labelEpisodesLeftval.config(text=str(episodes))
+        self.labelCollisionsItselfval.config(text=str(selfCollisions))
+        self.labelCollisionsWallval.config(text=str(wallCollisions))
+        self.labelMovingAverageCollisionsWallval.config(text=str(movingAverageWallCollisions))
 
     def clear(self):
         for bodyPart in self.snakeGUI:
