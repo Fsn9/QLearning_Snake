@@ -59,11 +59,11 @@ def generateCartesianState(x,y):
 # x H x
 def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environmentMatrixWithoutWalls,range_):
 	model = []
-	neighbourhoodStates = []
+	#neighbourhoodStates = []
 	thickness = range_
 	outInsideConversion = thickness
 
-	_,wallsModel = getWallsModel(envSizeWidth,envSizeHeight,thickness)
+	wallsModel = getWallsModel(envSizeWidth,envSizeHeight,thickness)
 	completeEnvironment = putWalls(environmentMatrixWithoutWalls,wallsModel,thickness)
 	if strength == 'low':
 		if direction == 'up':
@@ -72,7 +72,7 @@ def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environme
 				left = states.CartesianState(state.getX()-range_,state.getY())
 				front = states.CartesianState(state.getX(),state.getY()-range_)
 				right = states.CartesianState(state.getX()+range_,state.getY())
-				neighbourhoodStates.extend([left,front,right])
+				#neighbourhoodStates.extend([left,front,right])
 				model.append(completeEnvironment[left.getY()+outInsideConversion,left.getX()+outInsideConversion])
 				model.append(completeEnvironment[front.getY()+outInsideConversion,front.getX()+outInsideConversion])
 				model.append(completeEnvironment[right.getY()+outInsideConversion,right.getX()+outInsideConversion])
@@ -82,7 +82,7 @@ def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environme
 				left = states.CartesianState(state.getX(),state.getY()-range_)
 				front = states.CartesianState(state.getX()+range_,state.getY())
 				right = states.CartesianState(state.getX(),state.getY()+range_)
-				neighbourhoodStates.extend([left,front,right])
+				#neighbourhoodStates.extend([left,front,right])
 				model.append(completeEnvironment[left.getY()+outInsideConversion,left.getX()+outInsideConversion])
 				model.append(completeEnvironment[front.getY()+outInsideConversion,front.getX()+outInsideConversion])
 				model.append(completeEnvironment[right.getY()+outInsideConversion,right.getX()+outInsideConversion])
@@ -92,7 +92,7 @@ def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environme
 				left = states.CartesianState(state.getX()+range_,state.getY())
 				front = states.CartesianState(state.getX(),state.getY()+range_)
 				right = states.CartesianState(state.getX()-range_,state.getY())
-				neighbourhoodStates.extend([left,front,right])
+				#neighbourhoodStates.extend([left,front,right])
 				model.append(completeEnvironment[left.getY()+outInsideConversion,left.getX()+outInsideConversion])
 				model.append(completeEnvironment[front.getY()+outInsideConversion,front.getX()+outInsideConversion])
 				model.append(completeEnvironment[right.getY()+outInsideConversion,right.getX()+outInsideConversion])
@@ -102,7 +102,7 @@ def getLineOfSight(envSizeWidth,envSizeHeight,strength,state,direction,environme
 				left = states.CartesianState(state.getX(),state.getY()+range_)
 				front = states.CartesianState(state.getX()-range_,state.getY())
 				right = states.CartesianState(state.getX(),state.getY()-range_)
-				neighbourhoodStates.extend([left,front,right])
+				#neighbourhoodStates.extend([left,front,right])
 				model.append(completeEnvironment[left.getY()+outInsideConversion,left.getX()+outInsideConversion])
 				model.append(completeEnvironment[front.getY()+outInsideConversion,front.getX()+outInsideConversion])
 				model.append(completeEnvironment[right.getY()+outInsideConversion,right.getX()+outInsideConversion])
@@ -147,6 +147,43 @@ def putWalls(envWithoutWalls,envWithWalls,thickness):
 	envWithWalls[thickness:rowsWithout + thickness,thickness:colsWithout + thickness] = envWithoutWalls[:][:]
 	
 	return envWithWalls
+
+# WALLS
+def getWallsModel(envSizeWidth,envSizeHeight,thickness):
+	#create matrix with surrounding walls (-1) and inside environment (0)
+	matrixEnvironmentWithWalls = -1*np.ones((envSizeHeight+2*thickness,envSizeWidth+2*thickness),dtype=int)
+	matrixEnvironmentWithWalls[thickness:-thickness,thickness:-thickness] = 0
+	#get dimensions to use in the loop
+	rows = matrixEnvironmentWithWalls.shape[0] 
+	cols = matrixEnvironmentWithWalls.shape[1]
+	
+	
+	'''
+	#define an empty dictionary to collect the states of the walls and the side associated
+	sideToWalls = {}
+	wallsUp = []
+	wallsLeft = []
+	wallsRight = []
+	wallsDown = []
+
+	for eachRow in range(0,rows):
+		for eachCol in range(0,cols):
+			if matrixEnvironmentWithWalls[eachRow,eachCol] == -1:
+				if eachRow == 0:
+					wallsUp.append(states.CartesianState(eachCol-1,eachRow-1))
+					sideToWalls['up'] = wallsUp
+				elif eachRow == envSizeHeight + 1:
+					wallsDown.append(states.CartesianState(eachCol-1,eachRow-1))
+					sideToWalls['down'] = wallsDown
+				elif eachCol == 0 and eachRow != envSizeHeight + 1:
+					wallsLeft.append(states.CartesianState(eachCol-1,eachRow-1))
+					sideToWalls['left'] = wallsLeft
+				else:
+					wallsRight.append(states.CartesianState(eachCol-1,eachRow-1))
+					sideToWalls['right'] = wallsRight
+	'''
+	return matrixEnvironmentWithWalls
+
 
 def getCartesianStates(envSizeWidth,envSizeHeight):
 	cartesianStates = []
@@ -210,7 +247,7 @@ def getAllPolarStatesRelatedToAPoint(envSizeWidth,envSizeHeight):
 	#	print(index,' ro:',eachState.getRo(),' theta:',eachState.getTheta())
 
 	return allPolarStates
-
+'''
 def getAllPolarStatesRelatedToNPoints(envSizeWidth,envSizeHeight,nPoints):
 	foodPossibleStatesArray = getCartesianStates(envSizeWidth,envSizeHeight)
 	colFood = 0
@@ -235,39 +272,6 @@ def getAllPolarStatesRelatedToNPoints(envSizeWidth,envSizeHeight,nPoints):
 	#append the values filtered by the dictionary to the list		
 	for theta,ro in dictionaryFilter.items():
 		allPolarStates.append(states.PolarState(ro,theta))
-# WALLS
-def getWallsModel(envSizeWidth,envSizeHeight,thickness):
-	#create matrix with surrounding walls (-1) and inside environment (0)
-	matrixEnvironmentWithWalls = -1*np.ones((envSizeHeight+2*thickness,envSizeWidth+2*thickness),dtype=int)
-	matrixEnvironmentWithWalls[thickness:-thickness,thickness:-thickness] = 0
-	#get dimensions to use in the loop
-	rows = matrixEnvironmentWithWalls.shape[0] 
-	cols = matrixEnvironmentWithWalls.shape[1]
-
-	#define an empty dictionary to collect the states of the walls and the side associated
-	sideToWalls = {}
-	wallsUp = []
-	wallsLeft = []
-	wallsRight = []
-	wallsDown = []
-
-	for eachRow in range(0,rows):
-		for eachCol in range(0,cols):
-			if matrixEnvironmentWithWalls[eachRow,eachCol] == -1:
-				if eachRow == 0:
-					wallsUp.append(states.CartesianState(eachCol-1,eachRow-1))
-					sideToWalls['up'] = wallsUp
-				elif eachRow == envSizeHeight + 1:
-					wallsDown.append(states.CartesianState(eachCol-1,eachRow-1))
-					sideToWalls['down'] = wallsDown
-				elif eachCol == 0 and eachRow != envSizeHeight + 1:
-					wallsLeft.append(states.CartesianState(eachCol-1,eachRow-1))
-					sideToWalls['left'] = wallsLeft
-				else:
-					wallsRight.append(states.CartesianState(eachCol-1,eachRow-1))
-					sideToWalls['right'] = wallsRight
-
-	return sideToWalls,matrixEnvironmentWithWalls
 
 def getNearestWallsBySide(envSizeWidth,envSizeHeight,state,wallsModel):
 	nearestWallBySide = {} 
@@ -419,3 +423,4 @@ def test():
 	#print([eachDistance for eachDistance in getDistancesRelatedToAPoint(3,3,1)])
 
 #test()
+'''

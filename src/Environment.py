@@ -191,7 +191,6 @@ class Environment():
 		return foodCartesianState,xFood,yFood	
 
 	def stepInTheEnvironment(self,action):
-		#move agent in the direction equivalent to the action requested by the AI
 		self.collidedWithWall = False
 		self.ate = False
 		self.collidedWithItself = False
@@ -249,16 +248,13 @@ class Environment():
 	def canAgentMove(self,position):
 		ok = self.movementInsideBoundaries(position)
 		selfCollision = self.selfCollided(position)
-
-		if ok and not selfCollision and not self.foodWasEaten(position):
+		ateFood = self.foodWasEaten(position)
+		if ok and not selfCollision and not ateFood:
 			return 'OK'
-
 		elif ok and selfCollision:
 			return 'itself'
-
-		elif ok and self.foodWasEaten(position):
+		elif ok and ateFood:
 			return 'food'
-
 		elif not ok:
 			return 'wall'
 
@@ -315,10 +311,10 @@ class Environment():
 		return geometry.distanceBetweenTwoPoints(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 	
 	def foodWasEaten(self,position):
-		if position.getX() == self.food.getX() and position.getY() == self.food.getY():
-			return True
-		else:
-			return False
+		return position.getX() == self.food.getX() and position.getY() == self.food.getY()
+
+	def foodEaten(self):
+		return self.ate
 
 	def collisionWithWall(self):
 		return self.collidedWithWall
@@ -326,7 +322,7 @@ class Environment():
 	def selfCollided(self,position):
 		HEAD_INDEX = 0
 		for index,bodyPart in enumerate(self.snake.getBody()):
-			if HEAD_INDEX == 0:
+			if index == HEAD_INDEX:
 				continue
 			if bodyPart.getX() == position.getX() and bodyPart.getY() == position.getY():
 				return True
@@ -334,6 +330,3 @@ class Environment():
 
 	def collisionWithItself(self):
 		return self.collidedWithItself
-
-	def foodEaten(self):
-		return self.ate

@@ -8,7 +8,7 @@ SNAKE_INITIAL_LENGTH = 2
 EPSILON = 0.95
 GAMMA = 0.95
 ALPHA = 0.1
-MAX_STEPS_PER_EPISODE = 30
+MAX_STEPS_PER_EPISODE = 15
 EPISODES = 4000
 
 #range and strength of the line of sight
@@ -39,7 +39,7 @@ class RLearning():
 
 		# init QTable
 		self.QTable = qt.QTable(gridWidth, gridHeight)
-		self.QTable.initTable(gridWidth,gridHeight,RANGE_LINE_OF_SIGHT,STRENGTH_LINE_OF_SIGHT,self.environment.getEntities())
+		self.QTable.initTable(RANGE_LINE_OF_SIGHT,STRENGTH_LINE_OF_SIGHT,self.environment.getEntities())
 
 		# statistics
 		#steps
@@ -48,6 +48,7 @@ class RLearning():
 		#reward
 		self.averageReward = 0
 		self.averageSteps = 0
+		self.lastReward = 0
 		#collisions
 		self.counterCollisionsWithItself = 0
 		self.counterCollisionsWithWall = 0
@@ -56,6 +57,7 @@ class RLearning():
 		self.auxiliarCounterCollisions = 0
 		self.wallCollisionsSamplingFrequency = 10
 		self.auxiliarCounterCollisionsEpisodes = 0
+
 
 
 
@@ -81,15 +83,15 @@ class RLearning():
 		if self.environment.collisionWithWall() or self.environment.collisionWithItself() or self.numberOfstepsTaken == MAX_STEPS_PER_EPISODE:
 			#statistics
 			self.auxiliarCounterCollisionsEpisodes+=1
-			if self.environment.collisionWithWall():
-				self.counterCollisionsWithWall+=1
-				self.auxiliarCounterCollisions+=1
-				if self.auxiliarCounterCollisionsEpisodes == self.wallCollisionsSamplingFrequency:
-					self.movingAverageArrayWallCollisions.pop()
-					self.movingAverageArrayWallCollisions.insert(0,self.auxiliarCounterCollisions)
-					self.movingAverageWallCollisions = sum(self.movingAverageArrayWallCollisions) / len(self.movingAverageArrayWallCollisions)
-					self.auxiliarCounterCollisions = 0
-					self.auxiliarCounterCollisionsEpisodes = 0
+			self.counterCollisionsWithWall+=1
+			self.auxiliarCounterCollisions+=1
+
+			if self.auxiliarCounterCollisionsEpisodes == self.wallCollisionsSamplingFrequency:
+				self.movingAverageArrayWallCollisions.pop()
+				self.movingAverageArrayWallCollisions.insert(0,self.auxiliarCounterCollisions)
+				self.movingAverageWallCollisions = sum(self.movingAverageArrayWallCollisions) / len(self.movingAverageArrayWallCollisions)
+				self.auxiliarCounterCollisions = 0
+				self.auxiliarCounterCollisionsEpisodes = 0
 
 
 			if self.environment.collisionWithItself():
@@ -99,9 +101,7 @@ class RLearning():
 			self.arrayAverageSteps.insert(0,self.numberOfstepsTaken)
 			self.averageSteps = sum(self.arrayAverageSteps) / len(self.arrayAverageSteps)
 
-			self.arrayAverageReward.pop()
-			self.arrayAverageReward.insert(0,self.lastReward)
-			self.averageReward = sum(self.arrayAverageReward) / len(self.arrayAverageReward)
+
 
 			self.numberOfstepsTaken = 0
 			self.episodesLeft -= 1
@@ -114,8 +114,11 @@ class RLearning():
 		else:
 			#print('STEPS:\n',self.numberOfstepsTaken)
 			self.numberOfstepsTaken += 1
+			self.arrayAverageReward.pop()
+			self.arrayAverageReward.insert(0,self.lastReward)
+			self.averageReward = sum(self.arrayAverageReward) / len(self.arrayAverageReward)
 			if self.environment.foodEaten():
-				self.numberOfstepsTaken-=20
+				self.numberOfstepsTaken = 0
 
 	def decideAction(self):
 		randomNumber = random.uniform(0,1)
@@ -163,7 +166,7 @@ class RLearning():
 
 		#update QTable		
 		self.QTable.setNewQ(oldState,action,newQ)
-		print('newQ:',newQ,'reward:',reward)
+		#print('newQ:',newQ,'reward:',reward)
 		#statistics
 		self.lastReward = reward
 

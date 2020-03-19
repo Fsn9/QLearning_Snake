@@ -86,16 +86,16 @@ class GUI(tk.Tk):
                 self.snakeGUI.append(self.drawRectangle(eachBodyPart.getX()+1, eachBodyPart.getY()+1, 'orange'))
         food = self.rl.getEnvironment().getFoodData()
         self.foodGUI = self.drawRectangle(food.getX()+1, food.getY()+1, 'red')
-
+        
         reward,steps,epsilon,gamma,episodes,wallCollisions,selfCollisions,movingAverageWallCollisions = self.rl.getStatisticalData()
-        self.labelStepsval.config(text=str(steps))
-        self.labelGammaval.config(text=str(gamma))
-        self.labelEpsilonval.config(text=str(epsilon))
-        self.labelRewardval.config(text=str(reward))
-        self.labelEpisodesLeftval.config(text=str(episodes))
-        self.labelCollisionsItselfval.config(text=str(selfCollisions))
-        self.labelCollisionsWallval.config(text=str(wallCollisions))
-        self.labelMovingAverageCollisionsWallval.config(text=str(movingAverageWallCollisions))
+        self.labelStepsval.config(text=str(steps)[0:6])
+        self.labelGammaval.config(text=str(gamma)[0:6])
+        self.labelEpsilonval.config(text=str(epsilon)[0:6])
+        self.labelRewardval.config(text=str(reward)[0:6])
+        self.labelEpisodesLeftval.config(text=str(episodes)[0:6])
+        self.labelCollisionsItselfval.config(text=str(selfCollisions)[0:6])
+        self.labelCollisionsWallval.config(text=str(wallCollisions)[0:6])
+        self.labelMovingAverageCollisionsWallval.config(text=str(movingAverageWallCollisions)[0:6])
 
     def clear(self):
         for bodyPart in self.snakeGUI:
@@ -116,6 +116,6 @@ class GUI(tk.Tk):
             self.repaint()
             self.rl.act()
 
-        self.after(2,self.startLearning)
+        self.after(1,self.startLearning)
     
         

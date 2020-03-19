@@ -1,5 +1,3 @@
-from enum import Enum
-
 NUM_DIRECTIONS = 3
 
 LEFT = 0
