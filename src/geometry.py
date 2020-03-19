@@ -120,8 +120,13 @@ def generateAllStatesLineOfSight(rangeLineOfSight,strengthLineOfSight,entities):
 		allStates = list(itertools.product(entities,repeat=MAX_SEEN_LOW))
 	elif strengthLineOfSight == 'high':
 		allStates = list(itertools.product(entities,repeat=MAX_SEEN_HIGH))
+
 	allStates = thereIsOnlyOneFoodSoClean(allStates)
-	return allStates
+
+	# convert tuples to list
+	allStatesNew = [list(state) for state in allStates]
+
+	return allStatesNew
 
 def thereIsOnlyOneFoodSoClean(lineOfSightPossibilities):
 	FOOD = 2
@@ -226,8 +231,11 @@ def getAllPolarStatesRelatedToAPoint(envSizeWidth,envSizeHeight):
 	row = 0
 	allPolarStates = []
 
-	#filter to remove repeated states
-	dictionaryFilter = {}
+	#array that will contain all pairs including duplicate states
+	allRoThetaPairsUnfilteredList = []
+
+	#array that will contain all pairs excluding duplicate states
+	allRoThetaPairsFiltereredList = []
 
 	for state in foodPossibleStatesArray:
 		colFood = state.getX()
@@ -237,14 +245,12 @@ def getAllPolarStatesRelatedToAPoint(envSizeWidth,envSizeHeight):
 				if col == colFood and row == rowFood: # is this correct? not counting with the state in which they are overlapped
 					continue
 				state = generatePolarState(col,row,colFood,rowFood)
-				dictionaryFilter[state.getTheta()]=state.getRo()
+				allRoThetaPairsUnfilteredList.append((state.getRo(),state.getTheta()))
 
-	#append the values filtered by the dictionary to the list		
-	for theta,ro in dictionaryFilter.items():
-		allPolarStates.append(states.PolarState(ro,theta))
+	allRoThetaPairsFiltereredList = list(dict.fromkeys(allRoThetaPairsUnfilteredList))
 
-	#for index,eachState in enumerate(allPolarStates):
-	#	print(index,' ro:',eachState.getRo(),' theta:',eachState.getTheta())
+	for pairRoTheta in allRoThetaPairsFiltereredList:
+		allPolarStates.append(states.PolarState(pairRoTheta[0],pairRoTheta[1]))
 
 	return allPolarStates
 '''

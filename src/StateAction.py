@@ -1,11 +1,9 @@
 class StateAction():
-	state = []
-	Q = 0
-	action = 0
 	
 	def __init__(self,state,action):
 		self.state = state
 		self.action = action
+		self.Q = 0
 
 	def getState(self):
 		return self.state

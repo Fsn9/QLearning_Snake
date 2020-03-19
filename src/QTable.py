@@ -29,7 +29,7 @@ class QTable():
 			for polarState in allPolarStates:
 				for lineOfSightState in allLineOfSightStates:
 					for action in range(actions.NUM_DIRECTIONS):
-						self.table.append(sa.StateAction((polarState,[lineOfSightState]),action))
+						self.table.append(sa.StateAction((polarState,lineOfSightState),action))
 			print('LEN:',len(self.table))
 
 	def display(self):
@@ -37,11 +37,14 @@ class QTable():
 			print('state:','ro:',stateAction.getState()[POLAR_STATE_INDEX].getRo(),',theta:',stateAction.getState()[POLAR_STATE_INDEX].getTheta(),'lineOfSight:',stateAction.getState()[LINE_OF_SIGHT_INDEX],'\n','action',stateAction.getAction())
 
 	def findQ(self,state,action):
+		Q = 0
 		for stateAction in self.table:
 			if self.statesAreEqual(state,stateAction.getState()) and self.actionsAreEqual(action,stateAction.getAction()):
 				Q = stateAction.getQ()
 				return Q
-		return 0
+		print('não encontrou!!')
+		print(state[0].getRo(),state[0].getTheta(),state[1])
+		print(stateAction.getState()[0].getRo(),stateAction.getState()[0].getTheta(),state[1])
 
 	def setNewQ(self,state,action,newQ):
 		for stateAction in self.table:
@@ -49,12 +52,9 @@ class QTable():
 				stateAction.setQ(newQ)
 
 	def statesAreEqual(self,state1,state2):
-		if state1[POLAR_STATE_INDEX].getRo() == state2[POLAR_STATE_INDEX].getRo() \
+		return state1[POLAR_STATE_INDEX].getRo() == state2[POLAR_STATE_INDEX].getRo() \
 		and state1[POLAR_STATE_INDEX].getTheta() == state2[POLAR_STATE_INDEX].getTheta() \
-		and state1[LINE_OF_SIGHT_INDEX] == state2[LINE_OF_SIGHT_INDEX]:
-			return True
-		else:
-			return False
+		and state1[LINE_OF_SIGHT_INDEX] == state2[LINE_OF_SIGHT_INDEX]
 
 	def findBestQandAction(self,state):
 		bestQ = 0
@@ -73,10 +73,7 @@ class QTable():
 		return bestQ,bestAction
 
 	def actionsAreEqual(self,action1,action2):
-		if action1 == action2:
-			return True
-		else:
-			return False
+		return action1 == action2
 
 	def getTable(self):
 		return self.table

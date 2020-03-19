@@ -5,9 +5,6 @@ import random
 import actions
 
 class Entity():
-	polarState = [] 
-	cartesianState = [] 
-
 	def __init__(self,x,y):
 		self.cartesianState = states.CartesianState(x,y)
 	def updateCartesianState(self,cartesianState):
@@ -31,9 +28,6 @@ class MovableEntity(Entity):
 	def goRight(self):
 		return pos.Position(self.position.getX()+1,self.position.getY())
 
-class FixedEntity(Entity):
-	pass
-
 class Agent(MovableEntity):
 	polarState = []
 	def getPolarState(self):
@@ -50,13 +44,11 @@ class Agent(MovableEntity):
 		self.polarState = polarState
 
 class Snake(MovableEntity):
-	body = []
-	lastTail = []
-	state = []
 	def __init__(self,initialLength):
 		self.length = initialLength
 		self.body = []
 		self.state = []
+		self.lastTail = []
 
 	def __str__(self):
 		return '--SNAKE--\n'+'my body. list of (x,y) from head to tail:'+str([[eachBodyPart.getPosition().getX(),eachBodyPart.getPosition().getY()] for eachBodyPart in self.body])+'\n'
@@ -169,7 +161,7 @@ class Snake(MovableEntity):
 	def setState(self,state):
 		self.state = state
 
-class Food(FixedEntity):
+class Food(Entity):
 	def __init__(self):
 		pass
 	def setState(self,state):

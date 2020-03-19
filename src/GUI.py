@@ -2,8 +2,6 @@ import tkinter as tk
 
 
 class GUI(tk.Tk):
-    snakeGUI = []
-    foodGUI = []
 
     def __init__(self, rl, width, height, gridWidth, gridHeight, pixelSize):
         # initialize a Tk object
@@ -11,6 +9,10 @@ class GUI(tk.Tk):
 
         # save reinforcement learning object
         self.rl = rl
+
+        # define objects containing rectangles of food and snake
+        self.snakeGUI = []
+        self.foodGUI = []
 
         # save dimensions as attributes
         self.width = width
@@ -26,7 +28,7 @@ class GUI(tk.Tk):
         self.canvas = self.setCanvas(self.width, self.height, "black")
         self.canvas.grid(row=0, column=0, columnspan=2, sticky=tk.W + tk.E + tk.N + tk.S)
 
-        #draw labels
+        # draw labels
         self.labelReward = self.createLabel('Average reward:',1,0)
         self.labelRewardval = self.createLabel(str(self.rl.averageReward),1,1)
         self.labelSteps = self.createLabel('Average steps:',2,0)
@@ -43,7 +45,11 @@ class GUI(tk.Tk):
         self.labelCollisionsItselfval = self.createLabel(str(self.rl.counterCollisionsWithItself),7,1)
         self.labelMovingAverageCollisionsWall = self.createLabel('Moving average wall collisions',8,0)
         self.labelMovingAverageCollisionsWallval = self.createLabel(str(self.rl.movingAverageWallCollisions),8,1)
+
+        # draw walls
         self.drawWalls()
+
+        # start learning process
         self.startLearning()
 
 
@@ -84,6 +90,7 @@ class GUI(tk.Tk):
                 self.snakeGUI.append(self.drawRectangle(eachBodyPart.getX()+1, eachBodyPart.getY()+1, 'white'))
             else:
                 self.snakeGUI.append(self.drawRectangle(eachBodyPart.getX()+1, eachBodyPart.getY()+1, 'orange'))
+
         food = self.rl.getEnvironment().getFoodData()
         self.foodGUI = self.drawRectangle(food.getX()+1, food.getY()+1, 'red')
         
@@ -116,6 +123,6 @@ class GUI(tk.Tk):
             self.repaint()
             self.rl.act()
 
-        self.after(1,self.startLearning)
+        self.after(10,self.startLearning)
     
         

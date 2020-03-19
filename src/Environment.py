@@ -97,12 +97,6 @@ class Environment():
 		else:
 			return False
 
-	def isOverlapped(self,state1,state2):
-		if state1.getPosition().getX() == state2.getPosition().getX() and state1.getPosition().getY() == state2.getPosition().getY():
-			return True
-		else:
-			return False
-
 	def resetPositions(self,snakeInitialLength):
 		self.matrix.fill(0)
 		self.snake.resetBody()
@@ -155,18 +149,30 @@ class Environment():
 				for eachBodyPart in self.snake.getBody():
 					if self.isOverlapped(foodCartesianState,eachBodyPart):
 						isOverlapped = True
+
 				if isOverlapped:
-					while self.isOverlapped(foodCartesianState,eachBodyPart):
+					while isOverlapped:
 						xFood,yFood = self.randomizeXY()
 						foodCartesianState = states.CartesianState(xFood,yFood)
+						isOverlapped = False
+						for eachBodyPart in self.snake.getBody():
+							if self.isOverlapped(foodCartesianState,eachBodyPart):
+								isOverlapped = True
+
+							
+				foodCartesianState = states.CartesianState(xFood,yFood)
 				self.matrix[yFood,xFood] = FOOD							
 				#snake.updateBody(self.snake)
 				#set food
 				#foodCartesianState,xFood,yFood = self.resetFoodPosition()
-
 				self.updateFoodState(foodCartesianState)
 				self.updateSnakeState(xHead,yHead,xFood,yFood)
 
+	def isOverlapped(self,state1,state2):
+		if state1.getPosition().getX() == state2.getPosition().getX() and state1.getPosition().getY() == state2.getPosition().getY():
+			return True
+		else:
+			return False
 	def resetFoodPosition(self):
 		whereFood = np.where(self.matrix == FOOD)
 
@@ -180,11 +186,15 @@ class Environment():
 		for eachBodyPart in self.snake.getBody():
 			if self.isOverlapped(foodCartesianState,eachBodyPart):
 				isOverlapped = True
+
 		if isOverlapped:
-			while self.isOverlapped(foodCartesianState,eachBodyPart):
+			while isOverlapped:
 				xFood,yFood = self.randomizeXY()
 				foodCartesianState = states.CartesianState(xFood,yFood)
-		self.matrix[yFood,xFood] = FOOD	
+				isOverlapped = False
+				for eachBodyPart in self.snake.getBody():
+					if self.isOverlapped(foodCartesianState,eachBodyPart):
+						isOverlapped = True
 
 		self.updateFoodState(foodCartesianState)
 
@@ -292,7 +302,6 @@ class Environment():
 
 		stateSnake = (polarStateSnakeRelatedToFood,lineOfSightState)
 		#print(lineOfSightState)
-
 		self.snake.setState(stateSnake)
 
 		return stateSnake	

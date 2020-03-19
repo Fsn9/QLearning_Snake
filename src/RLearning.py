@@ -8,7 +8,7 @@ SNAKE_INITIAL_LENGTH = 2
 EPSILON = 0.95
 GAMMA = 0.95
 ALPHA = 0.1
-MAX_STEPS_PER_EPISODE = 15
+MAX_STEPS_PER_EPISODE = 20
 EPISODES = 4000
 
 #range and strength of the line of sight
@@ -16,16 +16,13 @@ RANGE_LINE_OF_SIGHT = 1
 STRENGTH_LINE_OF_SIGHT = 'low'
 
 class RLearning():
-	environment = []
-	agent = []
-	food = []
-	obstacles = []
-	QTable = []
+
 	def __init__(self,gridWidth,gridHeight,numObstacles):
 		# create snake and food objects
 		self.agent = ent.Snake(SNAKE_INITIAL_LENGTH)
 		self.food = ent.Food()
-		#print(self.agent)
+		self.obstacles = [-1]*numObstacles
+		
 
 		# set the environment
 		self.environment = env.Environment(gridWidth,gridHeight,SNAKE_INITIAL_LENGTH,self.agent,self.food,STRENGTH_LINE_OF_SIGHT,RANGE_LINE_OF_SIGHT)
@@ -45,10 +42,12 @@ class RLearning():
 		#steps
 		self.arrayAverageSteps = [MAX_STEPS_PER_EPISODE]*10
 		self.arrayAverageReward = [0]*30
+
 		#reward
 		self.averageReward = 0
 		self.averageSteps = 0
 		self.lastReward = 0
+
 		#collisions
 		self.counterCollisionsWithItself = 0
 		self.counterCollisionsWithWall = 0
@@ -57,8 +56,6 @@ class RLearning():
 		self.auxiliarCounterCollisions = 0
 		self.wallCollisionsSamplingFrequency = 10
 		self.auxiliarCounterCollisionsEpisodes = 0
-
-
 
 
 	def __str__(self):
@@ -79,8 +76,11 @@ class RLearning():
 		else:
 			return False
 
-	def updateCountersAndDecayingParameters(self):		
-		if self.environment.collisionWithWall() or self.environment.collisionWithItself() or self.numberOfstepsTaken == MAX_STEPS_PER_EPISODE:
+	def updateCountersAndDecayingParameters(self):
+		collidedWithWall = self.environment.collisionWithWall()		
+		collidedWithItself = self.environment.collisionWithItself()
+
+		if collidedWithWall or collidedWithItself or self.numberOfstepsTaken == MAX_STEPS_PER_EPISODE:
 			#statistics
 			self.auxiliarCounterCollisionsEpisodes+=1
 			self.counterCollisionsWithWall+=1
@@ -93,32 +93,31 @@ class RLearning():
 				self.auxiliarCounterCollisions = 0
 				self.auxiliarCounterCollisionsEpisodes = 0
 
-
-			if self.environment.collisionWithItself():
+			if collidedWithItself:
 				self.counterCollisionsWithItself+=1
 
-			self.arrayAverageSteps.pop()
-			self.arrayAverageSteps.insert(0,self.numberOfstepsTaken)
-			self.averageSteps = sum(self.arrayAverageSteps) / len(self.arrayAverageSteps)
-
-
-
+			self.averageSteps = self.updateMovingAverage(self.arrayAverageSteps,self.numberOfstepsTaken)
+			
 			self.numberOfstepsTaken = 0
 			self.episodesLeft -= 1
 			self.environment.resetPositions(SNAKE_INITIAL_LENGTH)
-			#print('episodesLeft:',self.episodesLeft)
+
+			#decay epsilon and gamma
 			self.actualEpsilon = ((self.episodesLeft-EPISODES)/EPISODES)*EPSILON+EPSILON
 			self.actualGamma = 0.5*((self.episodesLeft-EPISODES)/EPISODES)*GAMMA+GAMMA
 
-
 		else:
-			#print('STEPS:\n',self.numberOfstepsTaken)
 			self.numberOfstepsTaken += 1
-			self.arrayAverageReward.pop()
-			self.arrayAverageReward.insert(0,self.lastReward)
-			self.averageReward = sum(self.arrayAverageReward) / len(self.arrayAverageReward)
+			self.averageReward = self.updateMovingAverage(self.arrayAverageReward,self.lastReward)
+
+			#restart counter steps if food eaten to give more time to learn with the new body
 			if self.environment.foodEaten():
 				self.numberOfstepsTaken = 0
+
+	def updateMovingAverage(self,movingAverageArray,newValue):
+		movingAverageArray.pop()
+		movingAverageArray.insert(0,newValue)
+		return sum(movingAverageArray) / len(movingAverageArray)
 
 	def decideAction(self):
 		randomNumber = random.uniform(0,1)
@@ -156,8 +155,6 @@ class RLearning():
 		#do Action
 		newState,reward = self.environment.stepInTheEnvironment(action)
 
-		#print('newState',newState[0].getRo(),newState[0].getTheta(),newState[1],'reward',reward)
-
 		if self.isFinalState():
 			newQ = oldQ  + self.actualAlpha*(reward - oldQ)
 		else:
@@ -166,7 +163,7 @@ class RLearning():
 
 		#update QTable		
 		self.QTable.setNewQ(oldState,action,newQ)
-		#print('newQ:',newQ,'reward:',reward)
+		#print('newQ:',newQ,'reward:',reward,'\n')
 		#statistics
 		self.lastReward = reward
 

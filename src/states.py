@@ -5,6 +5,8 @@ class PolarState():
 	def __init__(self,ro,theta):
 		self.ro = ro
 		self.theta = theta
+	def __str__(self):
+		return ('ro:'+str(self.ro)+', theta:'+str(self.theta))
 	def getRo(self):
 		return self.ro
 	def getTheta(self):
@@ -22,9 +24,7 @@ class CartesianState():
 		return ('CartesianState:'+' x='+str(self.position.getX())+', y='+str(self.position.getY()))
 	def __sub__(self,other):
 		return CartesianState(self.getPosition().getX()-other.getPosition().getX(),self.getPosition().getY()-other.getPosition().getY())
-	#def __eq__(self,other):
-	#	return self.getPosition().getX() == other.getPosition().getX() and self.getPosition.getY() == other.getPosition().getY()
-
+		
 	def getPosition(self):
 		return self.position
 	def setPosition(self,pos):
