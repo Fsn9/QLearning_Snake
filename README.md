@@ -1,6 +1,6 @@
 # QLearning_Snake
 
-![](https://ibb.co/Gk4hgP4)
+![](https://i.imgur.com/Hk1kHPk.png)
 
 
 
