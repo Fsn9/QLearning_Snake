@@ -1,8 +1,8 @@
 # QLearning_Snake
 
-Reference-style:
-![logo]
-[logo]}:https://ibb.co/Gk4hgP4 "SnakeQ"
+![](https://ibb.co/Gk4hgP4)
+
+
 
 ## Exploring QLearning approach to the snake game
 
