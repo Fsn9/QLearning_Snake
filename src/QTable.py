@@ -41,9 +41,6 @@ class QTable():
 			if self.statesAreEqual(state,stateAction.getState()) and self.actionsAreEqual(action,stateAction.getAction()):
 				Q = stateAction.getQ()
 				return Q
-		print('não encontrou!!')
-		print(state[0].getRo(),state[0].getTheta(),state[1])
-		print(stateAction.getState()[0].getRo(),stateAction.getState()[0].getTheta(),state[1])
 
 	def setNewQ(self,state,action,newQ):
 		for stateAction in self.table:
