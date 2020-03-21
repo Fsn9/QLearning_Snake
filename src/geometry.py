@@ -23,18 +23,7 @@ def toRadians(deg):
 
 def toPolar(x,y):
 	ro = math.sqrt(x*x+y*y)
-	if x==0 and y>0:
-		theta = PI*0.5
-	elif x==0 and y<0:
-		theta = PI*0.5-PI
-	elif y==0 and x>0:
-		theta = 0
-	elif y==0 and x<0:
-		theta = -PI
-	elif x==0 and y==0:
-		theta = 0.0
-	else:
-		theta = math.atan2(y,x)
+	theta = math.atan2(y,x)
 	return ro,theta
 
 def distanceBetweenTwoPoints(x1,y1,x2,y2):
@@ -49,6 +38,31 @@ def generatePolarState(agentX,agentY,foodX,foodY):
 
 def generateCartesianState(x,y):
 	return states.CartesianState(x,y)
+
+def generatePolarState2(agentX,agentY,foodX,foodY,direction):
+	# in a grid where y grows down and x grows right
+	# the origin turns to be the snake head and y and x axis pointing in the direction of the movement
+	if direction == 'up':
+		foodYnew = agentY - foodY
+		foodXnew = foodX - agentX
+	elif direction == 'left':
+		foodYnew = agentX - foodX
+		foodXnew = agentY - foodY
+	elif direction == 'down':
+		foodYnew = foodY - agentY
+		foodXnew = agentX - foodX
+	elif direction == 'right':
+		foodYnew = foodX - agentX
+		foodXnew = foodY - agentY
+	ro,theta = toPolar2(foodXnew,foodYnew)
+	return states.PolarState(ro,theta)
+
+def toPolar2(x,y):
+	ro = math.sqrt(x*x+y*y)
+	theta = math.atan2(y,x)
+		
+	return ro,theta
+
 
 # LINE OF SIGHT #
 # high:
@@ -246,13 +260,45 @@ def getAllPolarStatesRelatedToAPoint(envSizeWidth,envSizeHeight):
 					continue
 				state = generatePolarState(col,row,colFood,rowFood)
 				allRoThetaPairsUnfilteredList.append((state.getRo(),state.getTheta()))
-
+	print(len(allRoThetaPairsUnfilteredList))
 	allRoThetaPairsFiltereredList = list(dict.fromkeys(allRoThetaPairsUnfilteredList))
 
 	for pairRoTheta in allRoThetaPairsFiltereredList:
 		allPolarStates.append(states.PolarState(pairRoTheta[0],pairRoTheta[1]))
 
 	return allPolarStates
+
+def getAllPolarStatesRelatedToAPoint2(envSizeWidth,envSizeHeight):
+	foodPossibleStatesArray = getCartesianStates(envSizeWidth,envSizeHeight)
+	colFood = 0
+	rowFood = 0
+	col = 0 
+	row = 0
+	allPolarStates = []
+
+	#array that will contain all pairs including duplicate states
+	allRoThetaPairsUnfilteredList = []
+
+	#array that will contain all pairs excluding duplicate states
+	allRoThetaPairsFiltereredList = []
+	for direction in directions_:
+		for state in foodPossibleStatesArray:
+			colFood = state.getX()
+			rowFood = state.getY()
+			for col in range(envSizeWidth):
+				for row in range(envSizeHeight):
+					if col == colFood and row == rowFood: # is this correct? not counting with the state in which they are overlapped
+						continue
+					state = generatePolarState2(col,row,colFood,rowFood,direction)
+					allRoThetaPairsUnfilteredList.append((state.getRo(),state.getTheta()))
+	print(len(allRoThetaPairsUnfilteredList))
+	allRoThetaPairsFiltereredList = list(dict.fromkeys(allRoThetaPairsUnfilteredList))	
+
+	for pairRoTheta in allRoThetaPairsFiltereredList:
+		allPolarStates.append(states.PolarState(pairRoTheta[0],pairRoTheta[1]))
+
+	return allPolarStates
+
 '''
 def getAllPolarStatesRelatedToNPoints(envSizeWidth,envSizeHeight,nPoints):
 	foodPossibleStatesArray = getCartesianStates(envSizeWidth,envSizeHeight)

@@ -3,13 +3,14 @@ import entities as ent
 import QTable as qt
 import random
 import actions
+import geometry
 
 SNAKE_INITIAL_LENGTH = 2
 EPSILON = 0.95
 GAMMA = 0.95
 ALPHA = 0.1
-MAX_STEPS_PER_EPISODE = 24
-EPISODES = 7000
+MAX_STEPS_PER_EPISODE = 20
+EPISODES = 5000
 
 #range and strength of the line of sight
 RANGE_LINE_OF_SIGHT = 1
@@ -51,18 +52,12 @@ class RLearning():
 		#collisions
 		self.counterCollisionsWithItself = 0
 		self.counterCollisionsWithWall = 0
-		self.movingAverageArrayWallCollisions = [0]*20
-		self.movingAverageWallCollisions = 0
-		self.auxiliarCounterCollisions = 0
-		self.wallCollisionsSamplingFrequency = 10
-		self.auxiliarCounterCollisionsEpisodes = 0
-
 
 	def __str__(self):
 		pass
 
 	def getStatisticalData(self):
-		return self.averageReward,self.averageSteps,self.actualEpsilon,self.actualGamma,self.episodesLeft,self.counterCollisionsWithWall,self.counterCollisionsWithItself,self.movingAverageWallCollisions
+		return self.averageReward,self.averageSteps,self.actualEpsilon,self.actualGamma,self.episodesLeft,self.counterCollisionsWithWall,self.counterCollisionsWithItself
 
 	def getAgent(self):
 		return self.agent
@@ -82,16 +77,8 @@ class RLearning():
 
 		if collidedWithWall or collidedWithItself or self.numberOfstepsTaken == MAX_STEPS_PER_EPISODE:
 			#statistics
-			self.auxiliarCounterCollisionsEpisodes+=1
-			self.counterCollisionsWithWall+=1
-			self.auxiliarCounterCollisions+=1
-
-			if self.auxiliarCounterCollisionsEpisodes == self.wallCollisionsSamplingFrequency:
-				self.movingAverageArrayWallCollisions.pop()
-				self.movingAverageArrayWallCollisions.insert(0,self.auxiliarCounterCollisions)
-				self.movingAverageWallCollisions = sum(self.movingAverageArrayWallCollisions) / len(self.movingAverageArrayWallCollisions)
-				self.auxiliarCounterCollisions = 0
-				self.auxiliarCounterCollisionsEpisodes = 0
+			if collidedWithWall:
+				self.counterCollisionsWithWall+=1
 
 			if collidedWithItself:
 				self.counterCollisionsWithItself+=1
@@ -123,14 +110,12 @@ class RLearning():
 		randomNumber = random.uniform(0,1)
 		if(randomNumber > self.actualEpsilon):
 			state = self.agent.getState()
-			print('INTELLIGENT')
 			#lookup at the table for the best action in the actual state
 			bestQ,bestAction = self.QTable.findBestQandAction(state)
 			return bestAction,state,bestQ
 
 		else:
 			state = self.agent.getState()
-			print('RANDOM')
 			#random choose an action
 			action = self.generateRandomNumber(0,actions.NUM_DIRECTIONS-1)
 			Q = self.QTable.findQ(state,action)
@@ -150,11 +135,9 @@ class RLearning():
 		#decide Action
 		action,oldState,oldQ = self.decideAction()
 
-		#print('oldState',oldState[0].getRo(),oldState[0].getTheta(),oldState[1],'action:',actions.toString(action))
-
 		#do Action
 		newState,reward = self.environment.stepInTheEnvironment(action)
-
+		
 		if self.isFinalState():
 			newQ = oldQ  + self.actualAlpha*(reward - oldQ)
 		else:
@@ -163,7 +146,7 @@ class RLearning():
 
 		#update QTable		
 		self.QTable.setNewQ(oldState,action,newQ)
-		#print('newQ:',newQ,'reward:',reward,'\n')
+
 		#statistics
 		self.lastReward = reward
 

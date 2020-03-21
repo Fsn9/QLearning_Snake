@@ -207,7 +207,6 @@ class Environment():
 		direction = self.getDirectionOfMovementOfSnake()
 		newState = self.moveAgent(self.snake.move(action,direction))
 		reward = self.computeReward()
-		self.updateEnvironment()
 		return newState,reward
 
 	def getDirectionOfMovementOfSnake(self):
@@ -224,34 +223,38 @@ class Environment():
 		xOther = otherPoint.getX()
 		yOther = otherPoint.getY()
 
-		if xMain-xOther < 0:
+		if xMain < xOther:
 			return 'left'
-		elif xMain-xOther > 0:
+		elif xMain > xOther:
 			return 'right'
-		elif yMain-yOther < 0:
+		elif yMain < yOther:
 			return 'up'
-		elif yMain-yOther > 0:
+		elif yMain > yOther:
 			return 'down'
 
 	def moveAgent(self,newPosition):
 		movement = self.canAgentMove(newPosition)
 		if movement == 'OK':
+			self.updateEnvironment()
 			newState = self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 
 		elif movement == 'wall':
 			self.collidedWithWall = True
 			self.resetPositions(self.snakeInitialLength)
+			self.updateEnvironment()
 			newState = self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 
 		elif movement == 'itself':
 			self.collidedWithItself = True
 			self.resetPositions(self.snakeInitialLength)
+			self.updateEnvironment()
 			newState = self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 
 		elif movement == 'food':
 			self.ate = True
 			self.resetFoodPosition()
 			self.snake.grow(self.getDirectionOfMovementOfSnake())
+			self.updateEnvironment()
 			newState = self.updateSnakeState(self.snake.getX(),self.snake.getY(),self.food.getX(),self.food.getY())
 		return newState
 
@@ -293,15 +296,14 @@ class Environment():
 
 	def updateSnakeState(self,xHead,yHead,xFood,yFood):
 		snakeCartesianState = states.CartesianState(xHead,yHead)
-		polarStateSnakeRelatedToFood = geometry.generatePolarState(xHead,yHead,xFood,yFood)
 		direction_ = self.getDirectionOfMovementOfSnake()
+		polarStateSnakeRelatedToFood = geometry.generatePolarState2(xHead,yHead,xFood,yFood,direction_)
 
 		lineOfSightState = geometry.getLineOfSight(self.gridWidth,self.gridHeight,\
 		self.strengthLineOfSight,\
 		snakeCartesianState,direction_,self.matrix,self.rangeLineOfSight)
 
 		stateSnake = (polarStateSnakeRelatedToFood,lineOfSightState)
-		#print(lineOfSightState)
 		self.snake.setState(stateSnake)
 
 		return stateSnake	
@@ -310,9 +312,9 @@ class Environment():
 		if self.ate:
 			return 100
 		elif self.collidedWithWall:
-			return -80
+			return -100
 		elif self.collidedWithItself:
-			return -70
+			return -100
 		else:
 			return -self.distanceToFood()
 

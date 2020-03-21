@@ -23,14 +23,13 @@ class QTable():
 
 	def initTable(self, rangeLineOfSight,strengthLineOfSight,entities):
 			#Get array of all polar states related to the Food
-			allPolarStates = geometry.getAllPolarStatesRelatedToAPoint(self.gridWidth,self.gridHeight)
+			allPolarStates = geometry.getAllPolarStatesRelatedToAPoint2(self.gridWidth,self.gridHeight)
 			allLineOfSightStates = geometry.generateAllStatesLineOfSight(rangeLineOfSight,strengthLineOfSight,entities)
 			#Insert elements of the array for each action in an object StateAction in the table
 			for polarState in allPolarStates:
 				for lineOfSightState in allLineOfSightStates:
 					for action in range(actions.NUM_DIRECTIONS):
 						self.table.append(sa.StateAction((polarState,lineOfSightState),action))
-			print('LEN:',len(self.table))
 
 	def display(self):
 		for stateAction in self.table:
